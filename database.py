@@ -1,4 +1,4 @@
-from models import db, Bookings
+from models import db, Todo
 from datetime import datetime
 from sqlalchemy import and_, or_
 
