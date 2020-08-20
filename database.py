@@ -31,7 +31,7 @@ def commit_changes():
 
 def get_id(model, name):
     return model.query.filter_by(name=name).all()[0].id
-    
+
 def get_room_bookings(room_id):
     return Bookings.query.filter_by(roomID=room_id).all()
 
