@@ -1,11 +1,4 @@
-from models import db, Todo
-from datetime import datetime
-from sqlalchemy import and_, or_
-
-import logging
-
-logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
-log = logging.getLogger()
+from models import db, Todo, Attribute, links
 
 def get_all(model):
     data = model.query.all()
@@ -16,39 +9,33 @@ def add_instance(model, **kwargs):
     db.session.add(instance)
     commit_changes()
 
-def delete_instance(model, id):
-    model.query.filter_by(id=id).delete()
+def delete_todo(id):
+    # links.delete().where(
+        # links.c.todo_id == id
+    # )
+    
+    todo_obj = Todo.query.filter_by(todo_id=id).all()[0]
+    # [todo_obj.attr_link.remove(link) for link in todo_obj.attr_link]
+    db.session.delete(todo_obj)
     commit_changes()
 
 def edit_instance(model, id, **kwargs):
     instance = model.query.filter_by(id=id).all()[0]
-    for attr, new_value in kwargs:
+    for attr, new_value in kwargs.items():
         setattr(instance, attr, new_value)
     commit_changes()
 
 def commit_changes():
     db.session.commit()
 
-def get_id(model, name):
-    return model.query.filter_by(name=name).all()[0].id
+def add_link(todo, attr):
+    todo_obj = Todo.query.filter_by(todo_id=todo).all()[0]
+    attr_obj = Attribute.query.filter_by(attr_id=attr).all()[0]
+    todo_obj.attr_link.append(attr_obj)
+    commit_changes()
 
-def get_room_bookings(room_id):
-    return Bookings.query.filter_by(roomID=room_id).all()
-
-def check_availability_room_bookings(roomID, starttime, endtime, eventdate):
-    #tmp=Bookings.query.filter_by(roomID=roomID,eventdate=datetime.strptime(starttime, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')).all()
-    #tmp=Bookings.query.filter_by(eventdate=datetime.strptime(starttime, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')).all()
-    #tmp=Bookings.query.filter(starttime>'2016-06-22 22:00:00',starttime<'2016-06-22 23:01:00').all()
-    tmp=Bookings.query.filter(roomID==roomID,or_(and_(Bookings.starttime<starttime,Bookings.endtime>starttime),and_(Bookings.starttime<endtime,Bookings.endtime>endtime),and_(Bookings.starttime>starttime,Bookings.endtime<endtime))).count()
-    # tmp=Bookings.query.filter(and_(Bookings.starttime<starttime,Bookings.endtime>starttime)).all()
-    # log.info(tmp)
-    # tmp=Bookings.query.filter(and_(Bookings.starttime<endtime,Bookings.endtime>endtime)).all()
-    # log.info(tmp)
-    # tmp=Bookings.query.filter(and_(Bookings.starttime>starttime,Bookings.endtime<endtime)).all()
-    # log.info(tmp)
-    log.info(tmp)
-    return tmp
-    #return Bookings.query.filter_by(roomID=roomID,eventdate=datetime.strptime(starttime, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')).all()
-    #return Bookings.query.filter_by(roomID=room_id).all()
-    #accounts, = session.query(Account.accounts).filter_by(id=account_id).first()
-    #accounts, followers = session.query(Account.accounts, Account.followers).filter_by(id=account_id).first()
+def get_link(this_todo_id):
+    todo_obj = Todo.query.filter_by(todo_id=this_todo_id).all()[0]
+    links = [link.attr_id for link in todo_obj.attr_link]
+    attr = [Attribute.query.filter_by(attr_id=this_attr_id).all()[0].attr_name for this_attr_id in links]
+    return attr
