@@ -10,10 +10,11 @@ links = db.Table('links',
 )
 
 class Todo(db.Model):
-    todo_id = db.Column(db.Integer, primary_key=True)
-    todo_name = db.Column(db.String(20), unique=True)
-    attr_link = db.relationship('Attribute', secondary=links, backref=db.backref('todos', lazy='dynamic'), cascade="save-update")
+    todo_id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    todo_name = db.Column(db.String(20), unique=True, nullable=False)
+    status = db.Column(db.Boolean, nullable=False)
+    attr_link = db.relationship('Attribute', secondary=links, backref=db.backref('todos', lazy='dynamic'))
 
 class Attribute(db.Model):
-    attr_id = db.Column(db.Integer, primary_key=True)
-    attr_name = db.Column(db.String(20))
+    attr_id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    attr_name = db.Column(db.String(20), nullable=False)
